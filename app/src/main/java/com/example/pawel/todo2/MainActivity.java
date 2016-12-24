@@ -3,7 +3,6 @@ package com.example.pawel.todo2;
 
 import android.content.ContentValues;
 import android.content.DialogInterface;
-import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -17,14 +16,15 @@ import android.widget.ArrayAdapter;
 import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.TextView;
-import com.example.pawel.todo2.R;
+
 import com.example.pawel.todo2.db.TaskContract;
 import com.example.pawel.todo2.db.TaskDbHelper;
+import com.example.pawel.todo2.model.Task;
+import com.example.pawel.todo2.service.TaskService;
+import com.example.pawel.todo2.service.ServiceFactory;
 
 import org.json.JSONArray;
-import org.json.JSONException;
 import org.json.JSONObject;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.FormHttpMessageConverter;
 import org.springframework.http.converter.HttpMessageConverter;
@@ -38,19 +38,14 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Map;
+import java.util.List;
 
 import rx.Observable;
-import rx.Observer;
 import rx.Subscriber;
 import rx.android.schedulers.AndroidSchedulers;
-import rx.functions.Func1;
 import rx.schedulers.Schedulers;
 
 public class MainActivity extends AppCompatActivity {
@@ -198,6 +193,29 @@ public class MainActivity extends AppCompatActivity {
         new AsyncHttpTask().execute(url);
 
         Log.d("co tu", String.valueOf(taskList));
+
+        TaskService service = ServiceFactory.createRetrofitService(TaskService.class, TaskService.SERVICE_ENDPOINT);
+            service.getUser()
+                    .subscribeOn(Schedulers.newThread())
+                    .observeOn(AndroidSchedulers.mainThread())
+                    .subscribe(new Subscriber<List<Task>>() {
+                        @Override
+                        public final void onCompleted() {
+                            // do nothing
+                        }
+
+                        @Override
+                        public final void onError(Throwable e) {
+                            Log.e("TaskDemo", e.getMessage());
+                        }
+
+                        @Override
+                        public void onNext(List<Task> tasks) {
+                            for(Task t:tasks){
+                                Log.d("co tu 2", t.getTitle());
+                            }
+                        }
+                    });
         Observable.create(new Observable.OnSubscribe<String>() {
             @Override
             public void call(Subscriber<? super String> subscriber) {
