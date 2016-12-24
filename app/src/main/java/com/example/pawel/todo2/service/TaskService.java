@@ -8,8 +8,10 @@ import com.example.pawel.todo2.model.TaskNew;
 import java.util.List;
 
 import retrofit.http.Body;
+import retrofit.http.DELETE;
 import retrofit.http.GET;
 import retrofit.http.POST;
+import retrofit.http.Path;
 import rx.Observable;
 
 public interface TaskService {
@@ -17,6 +19,8 @@ public interface TaskService {
 
     @GET("/task")
     Observable<List<Task>> getUser();
+    @DELETE("/task/{id}")
+    Observable<Task> deleteTask(@Path("id") String id);
     @POST("/task")
     Observable<Task> postUser(@Body TaskNew body);
 }

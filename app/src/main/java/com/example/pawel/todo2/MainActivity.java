@@ -1,10 +1,7 @@
 
 package com.example.pawel.todo2;
 
-import android.content.ContentValues;
 import android.content.DialogInterface;
-import android.database.sqlite.SQLiteDatabase;
-import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
@@ -17,44 +14,21 @@ import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.TextView;
 
-import com.example.pawel.todo2.db.TaskContract;
-import com.example.pawel.todo2.db.TaskDbHelper;
 import com.example.pawel.todo2.model.Task;
 import com.example.pawel.todo2.model.TaskNew;
-import com.example.pawel.todo2.service.TaskService;
 import com.example.pawel.todo2.service.ServiceFactory;
+import com.example.pawel.todo2.service.TaskService;
 
-import org.json.JSONArray;
-import org.json.JSONObject;
-import org.springframework.http.ResponseEntity;
-import org.springframework.http.converter.FormHttpMessageConverter;
-import org.springframework.http.converter.HttpMessageConverter;
-import org.springframework.http.converter.StringHttpMessageConverter;
-import org.springframework.util.LinkedMultiValueMap;
-import org.springframework.util.MultiValueMap;
-import org.springframework.web.client.RestTemplate;
-
-import java.io.BufferedInputStream;
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.net.HttpURLConnection;
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 
-import rx.Observable;
 import rx.Subscriber;
 import rx.android.schedulers.AndroidSchedulers;
 import rx.schedulers.Schedulers;
 
 public class MainActivity extends AppCompatActivity {
     private static final String TAG = "MainActivity";
-    private TaskDbHelper mHelper;
-
     private ListView mTaskListView;
-    private String responseBody;
     private ArrayAdapter<String> mAdapter;
     private  ArrayList<String> taskList = new ArrayList<>();
 
@@ -62,12 +36,7 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-
-        mHelper = new TaskDbHelper(this);
         mTaskListView = (ListView) findViewById(R.id.list_todo);
-
-
-
         updateUI();
     }
 
@@ -89,15 +58,6 @@ public class MainActivity extends AppCompatActivity {
                         .setPositiveButton("Add", new DialogInterface.OnClickListener() {
                             @Override
                             public void onClick(DialogInterface dialog, int which) {
-                                String task = String.valueOf(taskEditText.getText());
-                                SQLiteDatabase db = mHelper.getWritableDatabase();
-                                ContentValues values = new ContentValues();
-                                values.put(TaskContract.TaskEntry.COL_TASK_TITLE, task);
-                                db.insertWithOnConflict(TaskContract.TaskEntry.TABLE,
-                                        null,
-                                        values,
-                                        SQLiteDatabase.CONFLICT_REPLACE);
-                                db.close();
                                 postData(new TaskNew(String.valueOf(taskEditText.getText())));
                                 updateUI();
                             }
@@ -135,7 +95,31 @@ public class MainActivity extends AppCompatActivity {
 
                     }
                 });
+    }
+    private void deleteTask(String id) {
+        Log.d("usuun",id);
+        TaskService service = ServiceFactory.createRetrofitService(TaskService.class, TaskService.SERVICE_ENDPOINT);
+        service.deleteTask(id)
+                .subscribeOn(Schedulers.newThread())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(new Subscriber<Task>() {
+                    @Override
+                    public final void onCompleted() {
+                        // do nothing
+                    }
 
+                    @Override
+                    public final void onError(Throwable e) {
+                        Log.e("TaskDemo", e.getMessage());
+                    }
+
+                    @Override
+                    public void onNext(Task t) {
+
+                        Log.d("co tu 12321321", t.getId());
+
+                    }
+                });
     }
     private void updateUI() {
 
@@ -183,12 +167,8 @@ public class MainActivity extends AppCompatActivity {
     public void deleteTask(View view) {
         View parent = (View) view.getParent();
         TextView taskTextView = (TextView) parent.findViewById(R.id.task_title);
-        String task = String.valueOf(taskTextView.getText());
-        SQLiteDatabase db = mHelper.getWritableDatabase();
-        db.delete(TaskContract.TaskEntry.TABLE,
-                TaskContract.TaskEntry.COL_TASK_TITLE + " = ?",
-                new String[]{task});
-        db.close();
+        String task = String.valueOf(taskTextView.getId()); ///nie właściwe id
+        deleteTask(task);
         updateUI();
     }
 
