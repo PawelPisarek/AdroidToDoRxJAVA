@@ -24,6 +24,8 @@ import com.example.pawel.todo2.db.TaskDbHelper;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.FormHttpMessageConverter;
 import org.springframework.http.converter.HttpMessageConverter;
 import org.springframework.http.converter.StringHttpMessageConverter;
@@ -43,14 +45,20 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
-import java.util.Observable;
-import java.util.Observer;
+
+import rx.Observable;
+import rx.Observer;
+import rx.Subscriber;
+import rx.android.schedulers.AndroidSchedulers;
+import rx.functions.Func1;
+import rx.schedulers.Schedulers;
 
 public class MainActivity extends AppCompatActivity {
     private static final String TAG = "MainActivity";
     private TaskDbHelper mHelper;
 
     private ListView mTaskListView;
+    private String responseBody;
     private ArrayAdapter<String> mAdapter;
     private  ArrayList<String> taskList = new ArrayList<>();
 
@@ -63,12 +71,7 @@ public class MainActivity extends AppCompatActivity {
         mTaskListView = (ListView) findViewById(R.id.list_todo);
 
 
-        new AsyncHttpTask2().callService(new Observer() {
-            @Override
-            public void update(Observable observable, Object o) {
 
-            }
-        });
         updateUI();
     }
 
@@ -195,10 +198,34 @@ public class MainActivity extends AppCompatActivity {
         new AsyncHttpTask().execute(url);
 
         Log.d("co tu", String.valueOf(taskList));
-        if (taskList.isEmpty()){
-        } else {
+        Observable.create(new Observable.OnSubscribe<String>() {
+            @Override
+            public void call(Subscriber<? super String> subscriber) {
+                final String url2 = "http://10.0.2.2:3000/task";
+                new AsyncHttpTask2().execute(url2);
 
-        }
+            }
+
+        })
+                .subscribeOn(Schedulers.newThread())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(new Subscriber<String>() {
+                    @Override
+                    public void onCompleted() {
+                        Log.d("idw2",responseBody);
+                    }
+
+                    @Override
+                    public void onError(Throwable throwable) {
+                        Log.d("idwsadas2",responseBody);
+                    }
+
+                    @Override
+                    public void onNext(String s) {
+                        Log.d("id2sa",responseBody);
+                    }
+                });
+        Log.d("Czemu Log tu nie działa","asdasdasd");
 
         if (mAdapter == null) {
             mAdapter = new ArrayAdapter<>(this,
@@ -225,43 +252,29 @@ public class MainActivity extends AppCompatActivity {
         updateUI();
     }
 
-    public class AsyncHttpTask2 extends Observable {
+    public class AsyncHttpTask2 extends AsyncTask<String, Void, Integer> {
 
-        final String url2 = "http://10.0.2.2:3000/task";
-        public void callService(Observer backCommunicator) {
-
-            addObserver(backCommunicator);
-            AsyncTask<String, Void, String> restCallTask =
-                    new AsyncTask<String, Void, String>() {
-                        @Override
-                        protected String doInBackground(String... params) {
+        @Override
+        protected Integer doInBackground(String... params) {
 
 
-                            RestTemplate restTemplate = new RestTemplate();
+            RestTemplate restTemplate = new RestTemplate();
 
-                            HttpMessageConverter formHttpMessageConverter = new FormHttpMessageConverter();
-                            HttpMessageConverter stringHttpMessageConverternew = new StringHttpMessageConverter();
+            HttpMessageConverter formHttpMessageConverter = new FormHttpMessageConverter();
+            HttpMessageConverter stringHttpMessageConverternew = new StringHttpMessageConverter();
 
-                            restTemplate.getMessageConverters().add(formHttpMessageConverter);
-                            restTemplate.getMessageConverters().add(stringHttpMessageConverternew);
+            restTemplate.getMessageConverters().add(formHttpMessageConverter);
+            restTemplate.getMessageConverters().add(stringHttpMessageConverternew);
 
-                            MultiValueMap<String, String> map = new LinkedMultiValueMap<String, String>();
-                            map.add("title", "Stancho5");
-//                            restTemplate.postForObject(params[0], map, String.class);
-                            return restTemplate.postForObject(params[0], map, String.class);
-                        }
+            MultiValueMap<String, String> map = new LinkedMultiValueMap<String, String>();
+            map.add("title", "Stancho12");
 
-                        @Override
-                        protected void onPostExecute(String result) {
 
-                            Log.i("onPostExecute:...", result);
-                            AsyncHttpTask2.this.setChanged();
-                            AsyncHttpTask2.this.notifyObservers(result);
-                            AsyncHttpTask2.this.deleteObservers();
-                        }
-                    };
 
-            restCallTask.execute(url2);
+            ResponseEntity<String> st =restTemplate.postForEntity(params[0],map, String.class);
+            responseBody = st.getBody();
+
+            return 1; //"Failed to fetch data!";
         }
     }
 }
