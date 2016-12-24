@@ -24,6 +24,11 @@ import com.example.pawel.todo2.db.TaskDbHelper;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.springframework.http.converter.FormHttpMessageConverter;
+import org.springframework.http.converter.HttpMessageConverter;
+import org.springframework.http.converter.StringHttpMessageConverter;
+import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestTemplate;
 
 import java.io.BufferedInputStream;
@@ -217,69 +222,25 @@ public class MainActivity extends AppCompatActivity {
 
         @Override
         protected Integer doInBackground(String... params) {
-            InputStream inputStream = null;
-
-            HttpURLConnection urlConnection = null;
-
-            Integer result = 0;
-            try {
-                /* forming th java.net.URL object */
-                URL url = new URL(params[0]);
 
 
-                urlConnection = (HttpURLConnection) url.openConnection();
+            RestTemplate restTemplate = new RestTemplate();
 
-                 /* optional request header */
-                urlConnection.setRequestProperty("Content-Type", "application/json");
+            HttpMessageConverter formHttpMessageConverter = new FormHttpMessageConverter();
+            HttpMessageConverter stringHttpMessageConverternew = new StringHttpMessageConverter();
 
-                /* optional request header */
-                urlConnection.setRequestProperty("Accept", "application/json");
+            restTemplate.getMessageConverters().add(formHttpMessageConverter);
+            restTemplate.getMessageConverters().add(stringHttpMessageConverternew);
 
-                /* for Get request */
-                urlConnection.setRequestMethod("POST");
-
-//                Map<String,String> title=  new HashMap<String, String>();
-//                title.put("title","nowy3");
-////                String str =  MainActivity.getJsonObjectFromMap(title).toString();
-////                Log.d("mapa",str);
-                String str =  "{\n" +
-                        "\t\"title\":\"nowy5\"\n" +
-                        "}";
-
-//                RestTemplate rest = new RestTemplate();
+            MultiValueMap<String, String> map = new LinkedMultiValueMap<String, String>();
+            map.add("title", "Stancho2");
 
 
-                Log.d("POST2",str);
-
-                byte[] outputInBytes = str.getBytes("UTF-8");
-                OutputStream os = urlConnection.getOutputStream();
-                os.write( outputInBytes );
-                os.close();
+                    restTemplate.postForObject(params[0],map, String.class);
 
 
-                int statusCode = urlConnection.getResponseCode();
 
-                /* 200 represents HTTP OK */
-                if (statusCode == 201) {
-
-                    inputStream = new BufferedInputStream(urlConnection.getInputStream());
-
-                    String response = convertInputStreamToString(inputStream);
-                    JSONObject recipesArray = new JSONObject(response);
-
-                    Log.d("url POST",recipesArray.toString());
-
-                    result = 1; // Successful
-
-                } else {
-                    result = 0; //"Failed to fetch data!";
-                }
-
-            } catch (Exception e) {
-                Log.d(TAG, e.getLocalizedMessage());
-            }
-
-            return result; //"Failed to fetch data!";
+            return 1; //"Failed to fetch data!";
         }
     }
 
