@@ -36,6 +36,7 @@ import org.springframework.web.client.RestTemplate;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedReader;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -47,7 +48,9 @@ import java.util.List;
 import rx.Observable;
 import rx.Subscriber;
 import rx.android.schedulers.AndroidSchedulers;
+import rx.functions.Func1;
 import rx.schedulers.Schedulers;
+import rx.subjects.PublishSubject;
 
 public class MainActivity extends AppCompatActivity {
     private static final String TAG = "MainActivity";
@@ -56,7 +59,8 @@ public class MainActivity extends AppCompatActivity {
     private ListView mTaskListView;
     private String responseBody;
     private ArrayAdapter<String> mAdapter;
-    private  ArrayList<String> taskList = new ArrayList<>();
+    private ArrayList<String> taskList = new ArrayList<>();
+    private PublishSubject<String> onLocationUpdated = PublishSubject.create();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -65,10 +69,25 @@ public class MainActivity extends AppCompatActivity {
 
         mHelper = new TaskDbHelper(this);
         mTaskListView = (ListView) findViewById(R.id.list_todo);
+        TaskService service = ServiceFactory.createRetrofitService(TaskService.class, TaskService.SERVICE_ENDPOINT);
 
 
+        onLocationUpdated.subscribe(new Subscriber<String>() {
+            @Override
+            public void onCompleted() {
+            }
 
-        updateUI();
+            @Override
+            public void onError(Throwable throwable) {
+            }
+
+            @Override
+            public void onNext(String s) {
+                Log.d("co tu 10", s);
+                updateUI();
+            }
+        });
+        refres();
     }
 
     @Override
@@ -99,7 +118,6 @@ public class MainActivity extends AppCompatActivity {
                                         SQLiteDatabase.CONFLICT_REPLACE);
                                 db.close();
                                 postData(new TaskNew(String.valueOf(taskEditText.getText())));
-                                updateUI();
                             }
                         })
                         .setNegativeButton("Cancel", null)
@@ -132,48 +150,56 @@ public class MainActivity extends AppCompatActivity {
                     public void onNext(Task t) {
 
                         Log.d("co tu 12321321", t.getId());
-
+                        refres();
                     }
                 });
 
     }
-    private void updateUI() {
 
-        Log.d("co tu", String.valueOf(taskList));
 
+    private void refres() {
         TaskService service = ServiceFactory.createRetrofitService(TaskService.class, TaskService.SERVICE_ENDPOINT);
-            service.getUser()
-                    .subscribeOn(Schedulers.newThread())
-                    .observeOn(AndroidSchedulers.mainThread())
-                    .subscribe(new Subscriber<List<Task>>() {
-                        @Override
-                        public final void onCompleted() {
-                            // do nothing
+        service.getUser()
+                .subscribeOn(Schedulers.newThread())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(new Subscriber<List<Task>>() {
+                    @Override
+                    public final void onCompleted() {
+                        // do nothing
+                        onLocationUpdated.onNext("asdsad");
+                    }
+
+                    @Override
+                    public final void onError(Throwable e) {
+                        Log.e("TaskDemo", e.getMessage());
+                    }
+
+                    @Override
+                    public void onNext(List<Task> tasks) {
+                        taskList.clear();
+                        for (Task t : tasks) {
+                            Log.d("co tu 2", t.getTitle());
+                            taskList.add(t.getTitle());
+
                         }
 
-                        @Override
-                        public final void onError(Throwable e) {
-                            Log.e("TaskDemo", e.getMessage());
-                        }
+                    }
+                });
+    }
 
-                        @Override
-                        public void onNext(List<Task> tasks) {
-                            for(Task t:tasks){
-                                Log.d("co tu 2", t.getTitle());
-                                taskList.add(t.getTitle());
-                            }
-
-                        }
-                    });
+    private void updateUI() {
 
 
         if (mAdapter == null) {
+            Log.d("updateUI", "pusty");
             mAdapter = new ArrayAdapter<>(this,
                     R.layout.item_todo,
                     R.id.task_title,
                     taskList);
             mTaskListView.setAdapter(mAdapter);
         } else {
+            Log.d("updateUI", "pełny");
+            Log.d("dupa", taskList.get(1));
             mAdapter.clear();
             mAdapter.addAll(taskList);
             mAdapter.notifyDataSetChanged();
