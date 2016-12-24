@@ -43,6 +43,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.Observable;
+import java.util.Observer;
 
 public class MainActivity extends AppCompatActivity {
     private static final String TAG = "MainActivity";
@@ -60,8 +62,13 @@ public class MainActivity extends AppCompatActivity {
         mHelper = new TaskDbHelper(this);
         mTaskListView = (ListView) findViewById(R.id.list_todo);
 
-        final String url2 = "http://10.0.2.2:3000/task";
-        new AsyncHttpTask2().execute(url2);
+
+        new AsyncHttpTask2().callService(new Observer() {
+            @Override
+            public void update(Observable observable, Object o) {
+
+            }
+        });
         updateUI();
     }
 
@@ -218,74 +225,43 @@ public class MainActivity extends AppCompatActivity {
         updateUI();
     }
 
-    public class AsyncHttpTask2 extends AsyncTask<String, Void, Integer> {
+    public class AsyncHttpTask2 extends Observable {
 
-        @Override
-        protected Integer doInBackground(String... params) {
+        final String url2 = "http://10.0.2.2:3000/task";
+        public void callService(Observer backCommunicator) {
 
-
-            RestTemplate restTemplate = new RestTemplate();
-
-            HttpMessageConverter formHttpMessageConverter = new FormHttpMessageConverter();
-            HttpMessageConverter stringHttpMessageConverternew = new StringHttpMessageConverter();
-
-            restTemplate.getMessageConverters().add(formHttpMessageConverter);
-            restTemplate.getMessageConverters().add(stringHttpMessageConverternew);
-
-            MultiValueMap<String, String> map = new LinkedMultiValueMap<String, String>();
-            map.add("title", "Stancho2");
+            addObserver(backCommunicator);
+            AsyncTask<String, Void, String> restCallTask =
+                    new AsyncTask<String, Void, String>() {
+                        @Override
+                        protected String doInBackground(String... params) {
 
 
-                    restTemplate.postForObject(params[0],map, String.class);
+                            RestTemplate restTemplate = new RestTemplate();
 
+                            HttpMessageConverter formHttpMessageConverter = new FormHttpMessageConverter();
+                            HttpMessageConverter stringHttpMessageConverternew = new StringHttpMessageConverter();
 
+                            restTemplate.getMessageConverters().add(formHttpMessageConverter);
+                            restTemplate.getMessageConverters().add(stringHttpMessageConverternew);
 
-            return 1; //"Failed to fetch data!";
+                            MultiValueMap<String, String> map = new LinkedMultiValueMap<String, String>();
+                            map.add("title", "Stancho5");
+//                            restTemplate.postForObject(params[0], map, String.class);
+                            return restTemplate.postForObject(params[0], map, String.class);
+                        }
+
+                        @Override
+                        protected void onPostExecute(String result) {
+
+                            Log.i("onPostExecute:...", result);
+                            AsyncHttpTask2.this.setChanged();
+                            AsyncHttpTask2.this.notifyObservers(result);
+                            AsyncHttpTask2.this.deleteObservers();
+                        }
+                    };
+
+            restCallTask.execute(url2);
         }
     }
-
-    private static JSONObject getJsonObjectFromMap(Map params) throws JSONException {
-
-        //all the passed parameters from the post request
-        //iterator used to loop through all the parameters
-        //passed in the post request
-        Iterator iter = params.entrySet().iterator();
-
-        //Stores JSON
-        JSONObject holder = new JSONObject();
-
-        //using the earlier example your first entry would get email
-        //and the inner while would get the value which would be 'foo@bar.com'
-        //{ fan: { email : 'foo@bar.com' } }
-
-        //While there is another entry
-        while (iter.hasNext())
-        {
-            //gets an entry in the params
-            Map.Entry pairs = (Map.Entry)iter.next();
-
-            //creates a key for Map
-            String key = (String)pairs.getKey();
-
-            //Create a new map
-            Map m = (Map)pairs.getValue();
-
-            //object for storing Json
-            JSONObject data = new JSONObject();
-
-            //gets the value
-            Iterator iter2 = m.entrySet().iterator();
-            while (iter2.hasNext())
-            {
-                Map.Entry pairs2 = (Map.Entry)iter2.next();
-                data.put((String)pairs2.getKey(), (String)pairs2.getValue());
-            }
-
-            //puts email and 'foo@bar.com'  together in map
-            holder.put(key, data);
-        }
-        return holder;
-    }
-
-
 }
