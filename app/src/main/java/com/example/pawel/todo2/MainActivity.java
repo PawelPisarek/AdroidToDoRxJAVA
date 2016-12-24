@@ -20,6 +20,7 @@ import android.widget.TextView;
 import com.example.pawel.todo2.db.TaskContract;
 import com.example.pawel.todo2.db.TaskDbHelper;
 import com.example.pawel.todo2.model.Task;
+import com.example.pawel.todo2.model.TaskNew;
 import com.example.pawel.todo2.service.TaskService;
 import com.example.pawel.todo2.service.ServiceFactory;
 
@@ -76,83 +77,6 @@ public class MainActivity extends AppCompatActivity {
         return super.onCreateOptionsMenu(menu);
     }
 
-    public class AsyncHttpTask extends AsyncTask<String, Void, Integer> {
-
-        @Override
-        protected Integer doInBackground(String... params) {
-            InputStream inputStream = null;
-
-            HttpURLConnection urlConnection = null;
-
-            Integer result = 0;
-            try {
-                /* forming th java.net.URL object */
-                URL url = new URL(params[0]);
-
-
-                urlConnection = (HttpURLConnection) url.openConnection();
-
-                 /* optional request header */
-                urlConnection.setRequestProperty("Content-Type", "application/json");
-
-                /* optional request header */
-                urlConnection.setRequestProperty("Accept", "application/json");
-
-                /* for Get request */
-                urlConnection.setRequestMethod("GET");
-
-                int statusCode = urlConnection.getResponseCode();
-
-                /* 200 represents HTTP OK */
-                if (statusCode == 200) {
-
-                    inputStream = new BufferedInputStream(urlConnection.getInputStream());
-
-                    String response = convertInputStreamToString(inputStream);
-                    String s = response;
-                    JSONArray recipesArray = new JSONArray(s);
-
-                    Log.d("url",recipesArray.toString());
-                    for (int i = 0; i < recipesArray.length(); ++i) {
-                        JSONObject recipeObject = recipesArray.getJSONObject(i);
-
-                        String recipe = new String(recipeObject.getString("title"));
-
-                        taskList.add(recipe);
-                    }
-                    result = 1; // Successful
-
-                } else {
-                    result = 0; //"Failed to fetch data!";
-                }
-
-            } catch (Exception e) {
-                Log.d(TAG, e.getLocalizedMessage());
-            }
-
-            return result; //"Failed to fetch data!";
-        }
-    }
-
-    private String convertInputStreamToString(InputStream inputStream) throws IOException {
-
-        BufferedReader bufferedReader = new BufferedReader( new InputStreamReader(inputStream));
-
-        String line = "";
-        String result = "";
-
-        while((line = bufferedReader.readLine()) != null){
-            result += line;
-        }
-
-            /* Close Stream */
-        if(null!=inputStream){
-            inputStream.close();
-        }
-
-        return result;
-    }
-
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
@@ -174,6 +98,7 @@ public class MainActivity extends AppCompatActivity {
                                         values,
                                         SQLiteDatabase.CONFLICT_REPLACE);
                                 db.close();
+                                postData(new TaskNew(String.valueOf(taskEditText.getText())));
                                 updateUI();
                             }
                         })
@@ -187,10 +112,32 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    private void updateUI() {
+    private void postData(TaskNew task) {
+        TaskService service = ServiceFactory.createRetrofitService(TaskService.class, TaskService.SERVICE_ENDPOINT);
+        service.postUser(task)
+                .subscribeOn(Schedulers.newThread())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(new Subscriber<Task>() {
+                    @Override
+                    public final void onCompleted() {
+                        // do nothing
+                    }
 
-        final String url = "http://10.0.2.2:3000/task";
-        new AsyncHttpTask().execute(url);
+                    @Override
+                    public final void onError(Throwable e) {
+                        Log.e("TaskDemo", e.getMessage());
+                    }
+
+                    @Override
+                    public void onNext(Task t) {
+
+                        Log.d("co tu 12321321", t.getId());
+
+                    }
+                });
+
+    }
+    private void updateUI() {
 
         Log.d("co tu", String.valueOf(taskList));
 
@@ -213,37 +160,12 @@ public class MainActivity extends AppCompatActivity {
                         public void onNext(List<Task> tasks) {
                             for(Task t:tasks){
                                 Log.d("co tu 2", t.getTitle());
+                                taskList.add(t.getTitle());
                             }
+
                         }
                     });
-        Observable.create(new Observable.OnSubscribe<String>() {
-            @Override
-            public void call(Subscriber<? super String> subscriber) {
-                final String url2 = "http://10.0.2.2:3000/task";
-                new AsyncHttpTask2().execute(url2);
 
-            }
-
-        })
-                .subscribeOn(Schedulers.newThread())
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(new Subscriber<String>() {
-                    @Override
-                    public void onCompleted() {
-                        Log.d("idw2",responseBody);
-                    }
-
-                    @Override
-                    public void onError(Throwable throwable) {
-                        Log.d("idwsadas2",responseBody);
-                    }
-
-                    @Override
-                    public void onNext(String s) {
-                        Log.d("id2sa",responseBody);
-                    }
-                });
-        Log.d("Czemu Log tu nie działa","asdasdasd");
 
         if (mAdapter == null) {
             mAdapter = new ArrayAdapter<>(this,
@@ -270,29 +192,4 @@ public class MainActivity extends AppCompatActivity {
         updateUI();
     }
 
-    public class AsyncHttpTask2 extends AsyncTask<String, Void, Integer> {
-
-        @Override
-        protected Integer doInBackground(String... params) {
-
-
-            RestTemplate restTemplate = new RestTemplate();
-
-            HttpMessageConverter formHttpMessageConverter = new FormHttpMessageConverter();
-            HttpMessageConverter stringHttpMessageConverternew = new StringHttpMessageConverter();
-
-            restTemplate.getMessageConverters().add(formHttpMessageConverter);
-            restTemplate.getMessageConverters().add(stringHttpMessageConverternew);
-
-            MultiValueMap<String, String> map = new LinkedMultiValueMap<String, String>();
-            map.add("title", "Stancho12");
-
-
-
-            ResponseEntity<String> st =restTemplate.postForEntity(params[0],map, String.class);
-            responseBody = st.getBody();
-
-            return 1; //"Failed to fetch data!";
-        }
-    }
 }
