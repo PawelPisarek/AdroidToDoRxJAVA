@@ -17,10 +17,12 @@ import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.TextView;
 
+import com.example.pawel.todo2.adapter.TaskAdapter;
 import com.example.pawel.todo2.db.TaskContract;
 import com.example.pawel.todo2.db.TaskDbHelper;
 import com.example.pawel.todo2.model.Task;
 import com.example.pawel.todo2.model.TaskNew;
+import com.example.pawel.todo2.model.Tasks;
 import com.example.pawel.todo2.service.TaskService;
 import com.example.pawel.todo2.service.ServiceFactory;
 
@@ -58,12 +60,15 @@ public class MainActivity extends AppCompatActivity {
 
     private ListView mTaskListView;
     private String responseBody;
-    private ArrayAdapter<String> mAdapter;
-    private ArrayList<String> taskList = new ArrayList<>();
+    //    private ArrayAdapter<String> mAdapter;
+//    private ArrayList<String> taskList = new ArrayList<>();
+    private Tasks taskList;
+    private TaskAdapter taskAd;
     private PublishSubject<String> onLocationUpdated = PublishSubject.create();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        taskList = new Tasks(new ArrayList<String>());
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
@@ -88,6 +93,7 @@ public class MainActivity extends AppCompatActivity {
             }
         });
         refres();
+        taskAd = new TaskAdapter(this, taskList);
     }
 
     @Override
@@ -176,12 +182,13 @@ public class MainActivity extends AppCompatActivity {
 
                     @Override
                     public void onNext(List<Task> tasks) {
-                        taskList.clear();
+
                         for (Task t : tasks) {
                             Log.d("co tu 2", t.getTitle());
-                            taskList.add(t.getTitle());
+                            taskList.pushD(t.getTitle());
 
                         }
+
 
                     }
                 });
@@ -189,21 +196,7 @@ public class MainActivity extends AppCompatActivity {
 
     private void updateUI() {
 
-
-        if (mAdapter == null) {
-            Log.d("updateUI", "pusty");
-            mAdapter = new ArrayAdapter<>(this,
-                    R.layout.item_todo,
-                    R.id.task_title,
-                    taskList);
-            mTaskListView.setAdapter(mAdapter);
-        } else {
-            Log.d("updateUI", "pełny");
-            Log.d("dupa", taskList.get(1));
-            mAdapter.clear();
-            mAdapter.addAll(taskList);
-            mAdapter.notifyDataSetChanged();
-        }
+        taskAd.update(taskList);
     }
 
     public void deleteTask(View view) {
