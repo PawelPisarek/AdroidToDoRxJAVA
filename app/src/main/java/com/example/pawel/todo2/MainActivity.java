@@ -59,7 +59,7 @@ public class MainActivity extends AppCompatActivity {
                             @Override
                             public void onClick(DialogInterface dialog, int which) {
                                 postData(new TaskNew(String.valueOf(taskEditText.getText())));
-                                updateUI();
+                                //updateUI();
                             }
                         })
                         .setNegativeButton("Cancel", null)
@@ -92,6 +92,7 @@ public class MainActivity extends AppCompatActivity {
                     public void onNext(Task t) {
 
                         Log.d("co tu 12321321", t.getId());
+                        updateUI();
 
                     }
                 });
@@ -142,28 +143,32 @@ public class MainActivity extends AppCompatActivity {
 
                         @Override
                         public void onNext(List<Task> tasks) {
+                            List<String> collection = new ArrayList<String>();
                             for(Task t:tasks){
                                 Log.d("co tu 2", t.getTitle());
-                                taskList.add(t.getTitle());
+                                collection.add(t.getTitle());
                             }
+                            updateUI2(collection);
 
                         }
                     });
 
 
+    }
+
+    public void updateUI2(List<String> collection){
         if (mAdapter == null) {
             mAdapter = new ArrayAdapter<>(this,
                     R.layout.item_todo,
                     R.id.task_title,
-                    taskList);
+                    collection);
             mTaskListView.setAdapter(mAdapter);
         } else {
             mAdapter.clear();
-            mAdapter.addAll(taskList);
+            mAdapter.addAll(collection);
             mAdapter.notifyDataSetChanged();
         }
     }
-
     public void deleteTask(View view) {
         View parent = (View) view.getParent();
         TextView taskTextView = (TextView) parent.findViewById(R.id.task_title);

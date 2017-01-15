@@ -15,7 +15,7 @@ import retrofit.http.Path;
 import rx.Observable;
 
 public interface TaskService {
-    String SERVICE_ENDPOINT = "http://10.0.2.2:3000";
+    String SERVICE_ENDPOINT = "http://10.0.2.2:2000";
 
     @GET("/task")
     Observable<List<Task>> getUser();

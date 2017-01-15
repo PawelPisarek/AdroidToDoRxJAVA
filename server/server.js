@@ -30,7 +30,7 @@ app.post('/task', jsonParser, function (req, res) {
             body: '{"title":"' + req.body.title + '"}'
         },
         function (error, response, body) {
-            res.send(req.body);
+            res.status(201).send(JSON.parse('{"title":"' + req.body.title + '","id":"2"}'));
 
         }
     );
