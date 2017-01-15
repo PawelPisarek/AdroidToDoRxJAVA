@@ -12,6 +12,7 @@ import android.view.MenuItem;
 import android.widget.ArrayAdapter;
 import android.widget.EditText;
 import android.widget.ListView;
+import android.widget.TextView;
 
 import com.example.pawel.todo2.model.MessageNew;
 import com.example.pawel.todo2.model.Task;
@@ -30,10 +31,12 @@ import rx.subjects.PublishSubject;
 
 public class MainActivity extends AppCompatActivity {
     private static final String TAG = "MainActivity";
+    public static final String NAME_STRING = "name";
     private ListView mTaskListView;
     private ArrayAdapter<String> mAdapter;
     private ArrayList<String> taskList = new ArrayList<>();
     private PublishSubject<String> onLocationUpdated = PublishSubject.create();
+    private String loginEmail;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -41,6 +44,12 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
         mTaskListView = (ListView) findViewById(R.id.list_todo);
         updateUI();
+        String stringExtra = !getIntent().getStringExtra(NAME_STRING).trim().isEmpty() ? getIntent().getStringExtra(NAME_STRING) : "nie wprowadziłeś loginu";
+        loginEmail = stringExtra;
+
+        setTitle(stringExtra);
+
+
         onLocationUpdated.subscribe(new Subscriber<String>() {
             @Override
             public void onCompleted() {
@@ -110,7 +119,7 @@ public class MainActivity extends AppCompatActivity {
 
     private void getNew() {
         TaskService service = ServiceFactory.createRetrofitService(TaskService.class, TaskService.SERVICE_ENDPOINT);
-        service.getNewMessages("1@wp.pl")
+        service.getNewMessages(loginEmail)
                 .subscribeOn(Schedulers.newThread())
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(new Subscriber<MessageNew>() {
@@ -127,8 +136,8 @@ public class MainActivity extends AppCompatActivity {
                     @Override
                     public void onNext(MessageNew t) {
 
-                        Log.d("czy pobać nowe komunika", t.getEmail());
-                        if (Objects.equals("1@wp.pl", t.getEmail())) {
+//                        Log.d("czy pobać nowe komunika", t.getEmail());
+                        if (Objects.equals(loginEmail, t.getEmail())) {
 
                             onLocationUpdated.onNext("asdsad");
                         }
