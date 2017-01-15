@@ -97,31 +97,6 @@ public class MainActivity extends AppCompatActivity {
                     }
                 });
     }
-    private void deleteTask(String id) {
-        Log.d("usuun",id);
-        TaskService service = ServiceFactory.createRetrofitService(TaskService.class, TaskService.SERVICE_ENDPOINT);
-        service.deleteTask(id)
-                .subscribeOn(Schedulers.newThread())
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(new Subscriber<Task>() {
-                    @Override
-                    public final void onCompleted() {
-                        // do nothing
-                    }
-
-                    @Override
-                    public final void onError(Throwable e) {
-                        Log.e("TaskDemo", e.getMessage());
-                    }
-
-                    @Override
-                    public void onNext(Task t) {
-
-                        Log.d("co tu 12321321", t.getId());
-
-                    }
-                });
-    }
     private void updateUI() {
 
         Log.d("co tu", String.valueOf(taskList));
@@ -168,13 +143,6 @@ public class MainActivity extends AppCompatActivity {
             mAdapter.addAll(collection);
             mAdapter.notifyDataSetChanged();
         }
-    }
-    public void deleteTask(View view) {
-        View parent = (View) view.getParent();
-        TextView taskTextView = (TextView) parent.findViewById(R.id.task_title);
-        String task = String.valueOf(taskTextView.getId()); ///nie właściwe id
-        deleteTask(task);
-        updateUI();
     }
 
 }
