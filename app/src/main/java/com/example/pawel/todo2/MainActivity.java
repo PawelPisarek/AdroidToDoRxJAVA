@@ -25,12 +25,14 @@ import java.util.List;
 import rx.Subscriber;
 import rx.android.schedulers.AndroidSchedulers;
 import rx.schedulers.Schedulers;
+import rx.subjects.PublishSubject;
 
 public class MainActivity extends AppCompatActivity {
     private static final String TAG = "MainActivity";
     private ListView mTaskListView;
     private ArrayAdapter<String> mAdapter;
     private  ArrayList<String> taskList = new ArrayList<>();
+    private PublishSubject<String> onLocationUpdated = PublishSubject.create();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -38,6 +40,22 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
         mTaskListView = (ListView) findViewById(R.id.list_todo);
         updateUI();
+        onLocationUpdated.subscribe(new Subscriber<String>() {
+            @Override
+            public void onCompleted() {
+            }
+
+            @Override
+            public void onError(Throwable throwable) {
+            }
+
+            @Override
+            public void onNext(String s) {
+                Log.d("co tu 10", s);
+                updateUI();
+            }
+        });
+
     }
 
     @Override
@@ -92,7 +110,7 @@ public class MainActivity extends AppCompatActivity {
                     public void onNext(Task t) {
 
                         Log.d("co tu 12321321", t.getId());
-                        updateUI();
+                        onLocationUpdated.onNext("asdsad");
 
                     }
                 });
