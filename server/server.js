@@ -37,35 +37,24 @@ app.post('/task', jsonParser, function (req, res) {
 
 });
 
+var nowe = [];
+setTimeout(function () {
+    emitter.on('data', function (data) {
+        nowe = ['1@wp.pl', '2@wp.pl']
+    });
+}, 0);
+
 
 app.get('/task-new', function (req, res) {
 
 
-    new Promise(
-        function (resolve, reject) {
-            emitter.on('data', function (data) {
-
-                // console.log('Data: ' + data);
-
-            });
-
-            emitter.on('end', function () {
-                console.log('End');
-                resolve();
-
-
-            });
-
-            setTimeout(function () {
-                resolve();
-                console.log("1");
-            }, 5000)
-
-        }).then(function () {
-        res.send('nowe taski');
-    });
-
-
+    var index = nowe.indexOf(req.query.email);
+    if (index > -1) {
+        nowe.splice(index, 1);
+        res.send(JSON.parse('{"email":"' + req.query.email + '"}'));
+    }  else {
+        res.send(JSON.parse('{"email":"brak nowych"}'));
+    }
 });
 
 
