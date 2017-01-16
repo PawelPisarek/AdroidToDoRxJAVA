@@ -46,24 +46,15 @@ setTimeout(function () {
 
 
 app.get('/task-new', function (req, res) {
-    return new Promise(function (resolve, reject) {
-        var index = nowe.indexOf(req.query.email);
-        if (index > -1) {
-            nowe.splice(index, 1);
-            resolve();
-        }
 
-        emitter.on('end', function () {
-            resolve();
-        });
-    }).then(function () {
-        var index = nowe.indexOf(req.query.email);
-        if (index > -1) {
-            nowe.splice(index, 1);
-        }
+
+    var index = nowe.indexOf(req.query.email);
+    if (index > -1) {
+        nowe.splice(index, 1);
         res.send(JSON.parse('{"email":"' + req.query.email + '"}'));
-
-    });
+    }  else {
+        res.send(JSON.parse('{"email":"brak nowych"}'));
+    }
 });
 
 
