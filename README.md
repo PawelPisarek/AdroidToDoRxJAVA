@@ -4,8 +4,7 @@
 2. cd server/
 3. json-server --watch db.json
  - plik db.json:
-
-{
+ {
   "task": [
     {
       "id": 1,
@@ -20,8 +19,7 @@
       "title": "json-server"
     }
   ]
-}
-
+ }
 4. node server.js
 5. node long.js
 
