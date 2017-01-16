@@ -23,10 +23,10 @@ app2.get('/task-new', function (req, res) {
                          clearTimeout(myVar);
                          resolve();
                      }
-                   
+                     console.log("asd");
                  }
              });
-            
+            console.log("Dlaczego zablokowany jest port 2000 skoro ta aplikacja działa na porcie 2001?");
             myVar = setTimeout(cos, 1000);
         }
 
