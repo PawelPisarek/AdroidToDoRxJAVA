@@ -65,23 +65,7 @@ public class MainActivity extends AppCompatActivity {
                 updateUI();
             }
         });
-
-        new LongPolling().execute();
-    }
-
-    private class LongPolling extends AsyncTask<String, Void, String> {
-
-        @Override
-        protected String doInBackground(String... params) {
-            getNew();
-            return "sadsad";
-        }
-
-        @Override
-        protected void onPostExecute(String result) {
-            new LongPolling().execute();
-        }
-
+        getNew();
     }
 
 
@@ -126,21 +110,24 @@ public class MainActivity extends AppCompatActivity {
                     @Override
                     public final void onCompleted() {
                         // do nothing
+
                     }
 
                     @Override
                     public final void onError(Throwable e) {
-                        Log.e("TaskDemo", e.getMessage());
+                        Log.e("TaskDemo",""+ e.getMessage());
+                        getNew();
                     }
 
                     @Override
                     public void onNext(MessageNew t) {
 
-//                        Log.d("czy pobać nowe komunika", t.getEmail());
+                        Log.d("czy pobać nowe komunika", t.getEmail());
                         if (Objects.equals(loginEmail, t.getEmail())) {
 
                             onLocationUpdated.onNext("asdsad");
                         }
+                        getNew();
 
                     }
                 });
