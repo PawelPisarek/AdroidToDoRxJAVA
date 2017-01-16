@@ -1,0 +1,45 @@
+var express = require('express');
+var app2 = express();
+var bodyParser = require('body-parser');
+var request2 = require('request');
+var Promise = require("bluebird");
+
+
+app2.get('/task-new', function (req, res) {
+
+
+    new Promise(function (resolve, reject) {
+
+        var noNew;
+        var myVar;
+
+        function cos() {
+            // request2('http://localhost:2000/task-new?email=' + req.query.email, function (error, response, body) {
+            //     if (!error && response.statusCode == 200) {
+            //         noNew = JSON.parse(body).email;
+            //
+            //         console.log(noNew);
+            //         if ('brak nowych' !== noNew) {
+            //             clearTimeout(myVar);
+            //             resolve();
+            //         }
+            //         console.log("asd");
+            //     }
+            // });
+            console.log("Dlaczego zablokowany jest port 2000 skoro ta aplikacja działa na porcie 2001?");
+            myVar = setTimeout(cos, 1000);
+        }
+
+        cos();
+
+
+    }).then(function () {
+        res.send(JSON.parse('{"email":"' + req.query.email + '"}'));
+    });
+});
+
+
+
+app2.listen(2001, function () {
+    console.log('Example app listening on port 2001!')
+})
