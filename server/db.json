@@ -1,52 +1,16 @@
 {
   "task": [
     {
-      "id": 1,
-      "content": "json-server",
-      "sender": "1@wp.pl",
-      "receiver": "2@wp.pl"
-    },
-    {
       "sender": "3@wp.pl",
-      "content": "json-server2",
-      "receiver": "2@wp.pl",
-      "id": 2
-    },
-    {
-      "sender": "3@wp.pl",
-      "content": "json-server3",
-      "receiver": "1@wp.pl",
-      "id": 3
-    },
-    {
-      "sender": "1@wp.pl",
       "content": "4",
-      "receiver": "2@wp.pl",
-      "id": 4
-    },
-    {
-      "sender": "1@wp.pl",
-      "content": "5",
-      "receiver": "3@wp.pl",
-      "id": 5
-    },
-    {
-      "sender": "2@wp.pl",
-      "content": "asd",
       "receiver": "1@wp.pl",
-      "id": 6
+      "id": 1
     },
     {
       "sender": "1@wp.pl",
-      "content": "8",
-      "receiver": "2@wp.pl",
-      "id": 7
-    },
-    {
-      "sender": "1@wp.pl",
-      "content": "9",
-      "receiver": "2@wp.pl",
-      "id": 8
+      "content": "3",
+      "receiver": "3@wp.pl",
+      "id": 2
     }
   ]
 }

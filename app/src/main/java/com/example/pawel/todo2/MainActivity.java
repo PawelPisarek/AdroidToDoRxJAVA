@@ -14,6 +14,7 @@ import android.widget.ArrayAdapter;
 import android.widget.EditText;
 import android.widget.ListView;
 
+import com.example.pawel.todo2.adapter.MessagesList;
 import com.example.pawel.todo2.dao.Message;
 import com.example.pawel.todo2.dao.MessageNewDao;
 import com.example.pawel.todo2.model.Task;
@@ -21,7 +22,10 @@ import com.example.pawel.todo2.model.TaskNew;
 import com.example.pawel.todo2.service.ServiceFactory;
 import com.example.pawel.todo2.service.TaskService;
 
+import org.springframework.util.CollectionUtils;
+
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
 
@@ -33,8 +37,6 @@ import rx.subjects.PublishSubject;
 public class MainActivity extends AppCompatActivity {
     private static final String TAG = "MainActivity";
     public static final String NAME_STRING = "name";
-    private ListView mTaskListView;
-    private ArrayAdapter<String> mAdapter;
     private ArrayList<String> taskList = new ArrayList<>();
     private PublishSubject<String> onLocationUpdated = PublishSubject.create();
     private String loginEmail;
@@ -45,7 +47,6 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        mTaskListView = (ListView) findViewById(R.id.list_todo);
         updateUI();
         String stringExtra = !getIntent().getStringExtra(NAME_STRING).trim().isEmpty() ? getIntent().getStringExtra(NAME_STRING) : "nie wprowadziłeś loginu,";
         loginEmail = stringExtra;
@@ -71,6 +72,13 @@ public class MainActivity extends AppCompatActivity {
             }
         });
         getNew();
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+
+        Log.d("rekurencja","nadal działa");
     }
 
 
@@ -188,32 +196,28 @@ public class MainActivity extends AppCompatActivity {
 
                     @Override
                     public void onNext(List<Message> tasks) {
-                   
-                        List<String> collection = new ArrayList<String>();
-                        for (Message t : tasks) {
-                            Log.d("co tu 2", t.getContent());
-                            collection.add(t.getContent());
-                        }
-                        updateUI2(collection);
 
+                        List<Message> tasks2 = new ArrayList<Message>();
+                        for (Message task : tasks) {
+                            if (task.equalEmail(task.getReceiver(), receiver) && task.equalEmail(task.getSender(), sender) ||
+                                    task.equalEmail(task.getReceiver(), sender) && task.equalEmail(task.getSender(), receiver)) {
+                                tasks2.add(task);
+                            }
+                        }
+                        updateUI2(tasks2);
                     }
                 });
-
-
     }
 
-    public void updateUI2(List<String> collection) {
-        if (mAdapter == null) {
-            mAdapter = new ArrayAdapter<>(this,
-                    R.layout.item_todo,
-                    R.id.task_title,
-                    collection);
-            mTaskListView.setAdapter(mAdapter);
-        } else {
-            mAdapter.clear();
-            mAdapter.addAll(collection);
-            mAdapter.notifyDataSetChanged();
-        }
+
+    public void updateUI2(List<Message> collection) {
+
+        ListView messagesList = (ListView) findViewById(R.id.list_todo);
+
+        MessagesList adapter_listy = new MessagesList(this, collection, sender);
+
+        messagesList.setAdapter(adapter_listy);
+
     }
 
 }
