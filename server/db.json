@@ -17,6 +17,36 @@
       "content": "json-server3",
       "receiver": "1@wp.pl",
       "id": 3
+    },
+    {
+      "sender": "1@wp.pl",
+      "content": "4",
+      "receiver": "2@wp.pl",
+      "id": 4
+    },
+    {
+      "sender": "1@wp.pl",
+      "content": "5",
+      "receiver": "3@wp.pl",
+      "id": 5
+    },
+    {
+      "sender": "2@wp.pl",
+      "content": "asd",
+      "receiver": "1@wp.pl",
+      "id": 6
+    },
+    {
+      "sender": "1@wp.pl",
+      "content": "8",
+      "receiver": "2@wp.pl",
+      "id": 7
+    },
+    {
+      "sender": "1@wp.pl",
+      "content": "9",
+      "receiver": "2@wp.pl",
+      "id": 8
     }
   ]
 }

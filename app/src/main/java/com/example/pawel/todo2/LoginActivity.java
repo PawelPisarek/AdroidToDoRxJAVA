@@ -23,7 +23,7 @@ public class LoginActivity extends AppCompatActivity {
 
 
                 Intent intent = new Intent(LoginActivity.this, MainActivity.class)
-                        .putExtra(MainActivity.NAME_STRING, nameValue);
+                        .putExtra(MainActivity.NAME_STRING, nameValue+",1@wp.pl");
                 startActivity(intent);
             }
         });
