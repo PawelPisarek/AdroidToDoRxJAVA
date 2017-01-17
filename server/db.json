@@ -2,7 +2,21 @@
   "task": [
     {
       "id": 1,
-      "title": "json-server"
+      "content": "json-server",
+      "sender": "1@wp.pl",
+      "receiver": "2@wp.pl"
+    },
+    {
+      "sender": "3@wp.pl",
+      "content": "json-server2",
+      "receiver": "2@wp.pl",
+      "id": 2
+    },
+    {
+      "sender": "3@wp.pl",
+      "content": "json-server3",
+      "receiver": "1@wp.pl",
+      "id": 3
     }
   ]
 }
